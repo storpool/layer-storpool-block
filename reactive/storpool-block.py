@@ -20,12 +20,19 @@ def rdebug(s):
 
 @reactive.when('storpool-repo-add.available', 'storpool-common.config-written')
 @reactive.when_not('storpool-block.package-installed')
-@reactive.when_not('storpool-block.stopping')
+@reactive.when_not('storpool-block.stopped')
 def install_package():
 	rdebug('the block repo has become available and the common packages have been configured')
+
+	hookenv.status_set('maintenance', 'obtaining the requested StorPool version')
+	spver = hookenv.config().get('storpool_version', None)
+	if spver is None or spver == '':
+		rdebug('no storpool_version key in the charm config yet')
+		return
+
 	hookenv.status_set('maintenance', 'installing the StorPool block packages')
 	(err, newly_installed) = sprepo.install_packages({
-		'storpool-block': '16.02.25.744ebef-1ubuntu1',
+		'storpool-block': spver,
 	})
 	if err is not None:
 		rdebug('oof, we could not install packages: {err}'.format(err=err))
@@ -45,7 +52,7 @@ def install_package():
 @reactive.when('storpool-block.package-installed')
 @reactive.when('storpool-beacon.beacon-started')
 @reactive.when_not('storpool-block.block-started')
-@reactive.when_not('storpool-block.stopping')
+@reactive.when_not('storpool-block.stopped')
 def enable_and_start():
 	rdebug('enabling and starting the block service')
 	host.service_resume('storpool_block')
@@ -53,19 +60,19 @@ def enable_and_start():
 
 @reactive.when('storpool-block.block-started')
 @reactive.when_not('storpool-block.package-installed')
-@reactive.when_not('storpool-block.stopping')
+@reactive.when_not('storpool-block.stopped')
 def restart():
 	reactive.remove_state('storpool-block.block-started')
 
 @reactive.when('storpool-block.block-started')
 @reactive.when_not('storpool-beacon.beacon-started')
-@reactive.when_not('storpool-block.stopping')
+@reactive.when_not('storpool-block.stopped')
 def restart_even_better():
 	reactive.remove_state('storpool-block.block-started')
 
 @reactive.when('storpool-block.package-installed')
 @reactive.when_not('storpool-common.config-written')
-@reactive.when_not('storpool-block.stopping')
+@reactive.when_not('storpool-block.stopped')
 def reinstall():
 	reactive.remove_state('storpool-block.package-installed')
 
@@ -79,11 +86,17 @@ def remove_states_on_upgrade():
 	rdebug('storpool-block.upgrade-charm invoked')
 	reset_states()
 
-@reactive.hook('stop')
+@reactive.when('storpool-block.stop')
+@reactive.when_not('storpool-block.stopped')
 def remove_leftovers():
 	rdebug('storpool-block.stop invoked')
-	reactive.set_state('storpool-block.stopping')
-	reset_states()
+	reactive.remove_state('storpool-block.stop')
 
 	rdebug('stopping and disabling the storpool_block service')
 	host.service_pause('storpool_block')
+
+	rdebug('let storpool-beacon know')
+	reactive.set_state('storpool-beacon.stop')
+
+	reset_states()
+	reactive.set_state('storpool-block.stopped')
