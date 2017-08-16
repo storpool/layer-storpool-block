@@ -2,5 +2,4 @@ name: layer-storpool-block
 summary: Install the storpool-block package and start the client.
 maintainer: StorPool <support@storpool.com>
 description: |
-  FIXME: write something about this.
-  This layer installs a Debian package and starts a service and stuff.
+  This layer installs a Debian package and starts a service.
