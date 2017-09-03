@@ -13,10 +13,10 @@ from charms.reactive import helpers as rhelpers
 from charmhelpers.core import hookenv, host
 
 from spcharms import repo as sprepo
+from spcharms import utils as sputils
 
 def rdebug(s):
-	with open('/tmp/storpool-charms.log', 'a') as f:
-		print('{tm} [block] {s}'.format(tm=time.ctime(), s=s), file=f)
+	sputils.rdebug(s, prefix='block')
 
 @reactive.when('storpool-repo-add.available', 'storpool-common.config-written')
 @reactive.when_not('storpool-block.package-installed')
