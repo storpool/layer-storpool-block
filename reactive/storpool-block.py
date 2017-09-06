@@ -24,6 +24,11 @@ def rdebug(s):
 def install_package():
 	rdebug('the block repo has become available and the common packages have been configured')
 
+	if sputils.check_in_lxc():
+		rdebug('running in an LXC container, not doing anything more')
+		reactive.set_state('storpool-block.package-installed')
+		return
+
 	hookenv.status_set('maintenance', 'obtaining the requested StorPool version')
 	spver = hookenv.config().get('storpool_version', None)
 	if spver is None or spver == '':
@@ -54,6 +59,11 @@ def install_package():
 @reactive.when_not('storpool-block.block-started')
 @reactive.when_not('storpool-block.stopped')
 def enable_and_start():
+	if sputils.check_in_lxc():
+		rdebug('running in an LXC container, not doing anything more')
+		reactive.set_state('storpool-block.package-installed')
+		return
+
 	rdebug('enabling and starting the block service')
 	host.service_resume('storpool_block')
 	reactive.set_state('storpool-block.block-started')
@@ -92,11 +102,12 @@ def remove_leftovers():
 	rdebug('storpool-block.stop invoked')
 	reactive.remove_state('storpool-block.stop')
 
-	rdebug('stopping and disabling the storpool_block service')
-	host.service_pause('storpool_block')
+	if not sputils.check_in_lxc():
+		rdebug('stopping and disabling the storpool_block service')
+		host.service_pause('storpool_block')
 
-	rdebug('uninstalling any block-related packages')
-	sprepo.unrecord_packages('storpool-block')
+		rdebug('uninstalling any block-related packages')
+		sprepo.unrecord_packages('storpool-block')
 
 	rdebug('let storpool-beacon know')
 	reactive.set_state('storpool-beacon.stop')
