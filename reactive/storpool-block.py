@@ -15,14 +15,16 @@ def rdebug(s):
 @reactive.when_not('storpool-block.package-installed')
 @reactive.when_not('storpool-block.stopped')
 def install_package():
-    rdebug('the block repo has become available and the common packages have been configured')
+    rdebug('the block repo has become available and the common packages '
+           'have been configured')
 
     if sputils.check_in_lxc():
         rdebug('running in an LXC container, not doing anything more')
         reactive.set_state('storpool-block.package-installed')
         return
 
-    hookenv.status_set('maintenance', 'obtaining the requested StorPool version')
+    hookenv.status_set('maintenance',
+                       'obtaining the requested StorPool version')
     spver = hookenv.config().get('storpool_version', None)
     if spver is None or spver == '':
         rdebug('no storpool_version key in the charm config yet')
@@ -38,7 +40,8 @@ def install_package():
         return
 
     if newly_installed:
-        rdebug('it seems we managed to install some packages: {names}'.format(names=newly_installed))
+        rdebug('it seems we managed to install some packages: {names}'
+               .format(names=newly_installed))
         sprepo.record_packages('storpool-block', newly_installed)
     else:
         rdebug('it seems that all the packages were installed already')
