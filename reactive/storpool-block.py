@@ -89,16 +89,6 @@ def restart():
     reactive.remove_state('storpool-block.block-started')
 
 
-@reactive.when('storpool-block.block-started')
-@reactive.when_not('storpool-beacon.beacon-started')
-@reactive.when_not('storpool-block.stopped')
-def restart_even_better():
-    """
-    FIXME: remove me...
-    """
-    reactive.remove_state('storpool-block.block-started')
-
-
 @reactive.when('storpool-block.package-installed')
 @reactive.when_not('storpool-common.config-written')
 @reactive.when_not('storpool-block.stopped')
