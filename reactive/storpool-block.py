@@ -1,3 +1,7 @@
+"""
+A Juju charm layer that installs and starts the StorPool block (client)
+service from the StorPool Ubuntu package repository.
+"""
 from __future__ import print_function
 
 from charms import reactive
@@ -8,6 +12,9 @@ from spcharms import utils as sputils
 
 
 def rdebug(s):
+    """
+    Pass the diagnostic message string `s` to the central diagnostic logger.
+    """
     sputils.rdebug(s, prefix='block')
 
 
@@ -15,6 +22,9 @@ def rdebug(s):
 @reactive.when_not('storpool-block.package-installed')
 @reactive.when_not('storpool-block.stopped')
 def install_package():
+    """
+    Install the StorPool block package.
+    """
     rdebug('the block repo has become available and the common packages '
            'have been configured')
 
@@ -56,6 +66,9 @@ def install_package():
 @reactive.when_not('storpool-block.block-started')
 @reactive.when_not('storpool-block.stopped')
 def enable_and_start():
+    """
+    Start the `storpool_block` service.
+    """
     if sputils.check_in_lxc():
         rdebug('running in an LXC container, not doing anything more')
         reactive.set_state('storpool-block.package-installed')
@@ -70,6 +83,9 @@ def enable_and_start():
 @reactive.when_not('storpool-block.package-installed')
 @reactive.when_not('storpool-block.stopped')
 def restart():
+    """
+    Trigger a restart of the `storpool_block` service.
+    """
     reactive.remove_state('storpool-block.block-started')
 
 
@@ -77,6 +93,9 @@ def restart():
 @reactive.when_not('storpool-beacon.beacon-started')
 @reactive.when_not('storpool-block.stopped')
 def restart_even_better():
+    """
+    FIXME: remove me...
+    """
     reactive.remove_state('storpool-block.block-started')
 
 
@@ -84,10 +103,16 @@ def restart_even_better():
 @reactive.when_not('storpool-common.config-written')
 @reactive.when_not('storpool-block.stopped')
 def reinstall():
+    """
+    Trigger a reinstall and restart of the `storpool_block` service.
+    """
     reactive.remove_state('storpool-block.package-installed')
 
 
 def reset_states():
+    """
+    Trigger a full reinstall and restart cycle.
+    """
     rdebug('state reset requested')
     reactive.remove_state('storpool-block.package-installed')
     reactive.remove_state('storpool-block.block-started')
@@ -95,6 +120,9 @@ def reset_states():
 
 @reactive.hook('upgrade-charm')
 def remove_states_on_upgrade():
+    """
+    Reinstall and restart the `storpool_block` service upon charm upgrade.
+    """
     rdebug('storpool-block.upgrade-charm invoked')
     reset_states()
 
@@ -102,6 +130,9 @@ def remove_states_on_upgrade():
 @reactive.when('storpool-block.stop')
 @reactive.when_not('storpool-block.stopped')
 def remove_leftovers():
+    """
+    Remove the installed packages and stop the service.
+    """
     rdebug('storpool-block.stop invoked')
     reactive.remove_state('storpool-block.stop')
 
