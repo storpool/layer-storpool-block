@@ -74,6 +74,9 @@ def enable_and_start():
         reactive.set_state('storpool-block.package-installed')
         return
 
+    if not sputils.check_cgroups('block'):
+        return
+
     rdebug('enabling and starting the block service')
     host.service_resume('storpool_block')
     reactive.set_state('storpool-block.block-started')
