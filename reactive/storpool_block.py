@@ -71,7 +71,7 @@ def enable_and_start():
     """
     if sputils.check_in_lxc():
         rdebug('running in an LXC container, not doing anything more')
-        reactive.set_state('storpool-block.package-installed')
+        reactive.set_state('storpool-block.block-started')
         return
 
     if not sputils.check_cgroups('block'):
