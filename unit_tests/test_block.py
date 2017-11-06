@@ -121,7 +121,7 @@ STARTED_STATE = 'storpool-block.block-started'
 
 class TestStorPoolBlock(testtools.TestCase):
     """
-    Test various aspects of the storpool-beacon layer.
+    Test various aspects of the storpool-block layer.
     """
     def setUp(self):
         """
