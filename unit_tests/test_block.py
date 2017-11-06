@@ -6,7 +6,7 @@ A set of unit tests for the storpool-block layer.
 
 import os
 import sys
-import testtools
+import unittest
 
 import mock
 
@@ -119,7 +119,7 @@ INSTALLED_STATE = 'storpool-block.package-installed'
 STARTED_STATE = 'storpool-block.block-started'
 
 
-class TestStorPoolBlock(testtools.TestCase):
+class TestStorPoolBlock(unittest.TestCase):
     """
     Test various aspects of the storpool-block layer.
     """
