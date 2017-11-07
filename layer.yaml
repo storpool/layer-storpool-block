@@ -1,2 +1,3 @@
 repo: https://github.com/storpool/layer-storpool-block
 includes: ['layer:basic', 'layer:storpool-helper', 'layer:storpool-repo-add', 'layer:storpool-config', 'layer:storpool-common', 'layer:storpool-beacon']
+exclude: ['unit_tests']
