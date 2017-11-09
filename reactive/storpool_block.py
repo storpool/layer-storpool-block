@@ -5,8 +5,9 @@ service from the StorPool Ubuntu package repository.
 from __future__ import print_function
 
 from charms import reactive
-from charmhelpers.core import hookenv, host
+from charmhelpers.core import host
 
+from spcharms import config as spconfig
 from spcharms import repo as sprepo
 from spcharms import states as spstates
 from spcharms import status as spstatus
@@ -28,7 +29,9 @@ def rdebug(s):
     sputils.rdebug(s, prefix='block')
 
 
-@reactive.when('storpool-repo-add.available', 'storpool-common.config-written')
+@reactive.when('storpool-helper.config-set')
+@reactive.when('storpool-repo-add.available')
+@reactive.when('storpool-common.config-written')
 @reactive.when_not('storpool-block.package-installed')
 @reactive.when_not('storpool-block.stopped')
 def install_package():
@@ -44,7 +47,7 @@ def install_package():
         return
 
     spstatus.npset('maintenance', 'obtaining the requested StorPool version')
-    spver = hookenv.config().get('storpool_version', None)
+    spver = spconfig.m().get('storpool_version', None)
     if spver is None or spver == '':
         rdebug('no storpool_version key in the charm config yet')
         return
