@@ -197,7 +197,8 @@ class TestStorPoolBlock(unittest.TestCase):
 
     @mock_reactive_states
     @mock.patch('charmhelpers.core.host.service_resume')
-    def test_enable_and_start(self, service_resume):
+    @mock.patch('os.path.isfile')
+    def test_enable_and_start(self, isfile, service_resume):
         """
         Test that the layer enables the system startup service.
         """
@@ -221,11 +222,24 @@ class TestStorPoolBlock(unittest.TestCase):
         self.assertEquals(count_cgroups + 1, sputils.check_cgroups.call_count)
         self.assertEquals(set(), r_state.r_get_states())
 
-        # And now let it run.
+        # And now let it run... first without storpool_stat...
+        r_state.r_set_states(set())
         sputils.check_in_lxc.return_value = False
         sputils.check_cgroups.return_value = True
+        isfile.return_value = False
         testee.enable_and_start()
         self.assertEquals(count_in_lxc + 3, sputils.check_in_lxc.call_count)
         self.assertEquals(count_cgroups + 2, sputils.check_cgroups.call_count)
         service_resume.assert_called_once_with('storpool_block')
+        self.assertEquals(set([STARTED_STATE]), r_state.r_get_states())
+
+        # ...and then with it.
+        r_state.r_set_states(set())
+        sputils.check_in_lxc.return_value = False
+        sputils.check_cgroups.return_value = True
+        isfile.return_value = True
+        testee.enable_and_start()
+        self.assertEquals(count_in_lxc + 4, sputils.check_in_lxc.call_count)
+        self.assertEquals(count_cgroups + 3, sputils.check_cgroups.call_count)
+        self.assertEquals(3, service_resume.call_count)
         self.assertEquals(set([STARTED_STATE]), r_state.r_get_states())

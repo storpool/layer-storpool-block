@@ -4,6 +4,8 @@ service from the StorPool Ubuntu package repository.
 """
 from __future__ import print_function
 
+import os.path
+
 from charms import reactive
 from charmhelpers.core import host
 
@@ -91,6 +93,8 @@ def enable_and_start():
 
     rdebug('enabling and starting the block service')
     host.service_resume('storpool_block')
+    if os.path.isfile('/usr/sbin/storpool_stat.bin'):
+        host.service_resume('storpool_stat')
     reactive.set_state('storpool-block.block-started')
 
 
