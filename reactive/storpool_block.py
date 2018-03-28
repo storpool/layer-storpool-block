@@ -56,7 +56,7 @@ def install_package():
 
     spstatus.npset('maintenance', 'installing the StorPool block packages')
     (err, newly_installed) = sprepo.install_packages({
-        'storpool-block': spver,
+        'storpool-block': '*',
     })
     if err is not None:
         rdebug('oof, we could not install packages: {err}'.format(err=err))
