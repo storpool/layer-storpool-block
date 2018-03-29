@@ -5,6 +5,7 @@ service from the StorPool Ubuntu package repository.
 from __future__ import print_function
 
 import os.path
+import subprocess
 
 from charms import reactive
 from charmhelpers.core import host
@@ -56,7 +57,8 @@ def install_package():
 
     spstatus.npset('maintenance', 'installing the StorPool block packages')
     (err, newly_installed) = sprepo.install_packages({
-        'storpool-block': spver,
+        'storpool-block': '*',
+        'storpool-update': '*',
     })
     if err is not None:
         rdebug('oof, we could not install packages: {err}'.format(err=err))
@@ -91,10 +93,21 @@ def enable_and_start():
     if not sputils.check_cgroups('block'):
         return
 
+    # Enable the services...
     rdebug('enabling and starting the block service')
     host.service_resume('storpool_block')
     if os.path.isfile('/usr/sbin/storpool_stat.bin'):
         host.service_resume('storpool_stat')
+
+    # ...and restart everything that is running, just in case.
+    # Ignore the output and any error code returned.
+    try:
+        rdebug('About to run update_rdma')
+        res = subprocess.call(['/usr/lib/storpool/update_rdma', '--yes'])
+        rdebug('Got exit code {res} from update_rdma'.format(res=res))
+    except Exception as e:
+        rdebug('Running update_rdma: {e}'.format(e=e))
+
     reactive.set_state('storpool-block.block-started')
 
 

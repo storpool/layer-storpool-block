@@ -198,7 +198,8 @@ class TestStorPoolBlock(unittest.TestCase):
     @mock_reactive_states
     @mock.patch('charmhelpers.core.host.service_resume')
     @mock.patch('os.path.isfile')
-    def test_enable_and_start(self, isfile, service_resume):
+    @mock.patch('subprocess.call')
+    def test_enable_and_start(self, subcall, isfile, service_resume):
         """
         Test that the layer enables the system startup service.
         """
@@ -212,6 +213,7 @@ class TestStorPoolBlock(unittest.TestCase):
         self.assertEquals(count_in_lxc + 1, sputils.check_in_lxc.call_count)
         self.assertEquals(count_cgroups, sputils.check_cgroups.call_count)
         self.assertEquals(set([STARTED_STATE]), r_state.r_get_states())
+        self.assertEquals(0, subcall.call_count)
 
         # Now make sure it doesn't start if it can't find its control group.
         r_state.r_set_states(set())
@@ -220,6 +222,7 @@ class TestStorPoolBlock(unittest.TestCase):
         testee.enable_and_start()
         self.assertEquals(count_in_lxc + 2, sputils.check_in_lxc.call_count)
         self.assertEquals(count_cgroups + 1, sputils.check_cgroups.call_count)
+        self.assertEquals(0, subcall.call_count)
         self.assertEquals(set(), r_state.r_get_states())
 
         # And now let it run... first without storpool_stat...
@@ -231,6 +234,7 @@ class TestStorPoolBlock(unittest.TestCase):
         self.assertEquals(count_in_lxc + 3, sputils.check_in_lxc.call_count)
         self.assertEquals(count_cgroups + 2, sputils.check_cgroups.call_count)
         service_resume.assert_called_once_with('storpool_block')
+        self.assertEquals(1, subcall.call_count)
         self.assertEquals(set([STARTED_STATE]), r_state.r_get_states())
 
         # ...and then with it.
@@ -242,4 +246,5 @@ class TestStorPoolBlock(unittest.TestCase):
         self.assertEquals(count_in_lxc + 4, sputils.check_in_lxc.call_count)
         self.assertEquals(count_cgroups + 3, sputils.check_cgroups.call_count)
         self.assertEquals(3, service_resume.call_count)
+        self.assertEquals(2, subcall.call_count)
         self.assertEquals(set([STARTED_STATE]), r_state.r_get_states())
